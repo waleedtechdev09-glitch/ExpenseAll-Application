@@ -1,9 +1,8 @@
 import React from "react";
 import Image from "next/image";
 import { Manrope, Lato } from "next/font/google";
-import Navbar from "@/components/Navbar";
+import SiteChrome from "@/components/SiteChrome";
 import "@/app/globals.css";
-import Footer from "@/components/Footer";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -36,12 +35,7 @@ export default function RootLayout({
       className={`${manrope.variable} ${lato.variable} overflow-x-hidden`}
     >
       <body className="min-h-screen bg-[#081B3A] text-slate-100 flex flex-col font-sans relative overflow-x-hidden" suppressHydrationWarning>
-        {/* Header/Navbar Section */}
-        <Navbar />
-
-        {/* Main Content (Hero & Powerful Feature will render here with transparent backgrounds) */}
-        <main className="grow relative z-10">{children}</main>
-        <Footer />
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );
