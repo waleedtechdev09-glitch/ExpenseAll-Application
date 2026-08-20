@@ -33,19 +33,19 @@ const testimonials = [
       "Smart, secure, and beautifully designed. The insights and spending reports have completely changed the way I manage my money. Highly recommended for anyone serious about budgeting.",
   },
   {
-    name: "Jessica John",
+    name: "Theodore",
     platform: "iOS App Store",
     review:
       "I love how it combines budgeting, bill reminders, multiple accounts, and AI automation in one beautifully designed app. It keeps my finances organized without any hassle.",
   },
   {
-    name: "Jessica John",
+    name: "Maya",
     platform: "iOS App Store",
     review:
       "I can record expenses using my voice while driving or shopping. The app is fast, accurate, and works even when I'm offline.",
   },
   {
-    name: "Jessica John",
+    name: "Luke ",
     platform: "iOS App Store",
     review:
       "The interface is modern, clean, and intuitive. I was able to start tracking my finances within minutes.",

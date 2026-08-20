@@ -121,7 +121,7 @@ const AiPoweredFeature = () => {
                 className="
                   relative
                   w-full
-                  max-w-[320px] sm:max-w-[380px]
+                  max-w-[240px] sm:max-w-[300px]
                   aspect-[900/700]
                   mx-auto
                 "
@@ -131,8 +131,9 @@ const AiPoweredFeature = () => {
                   alt="Voice Entry Feature Showcase"
                   fill
                   priority
+                  quality={100}
                   className="object-contain"
-                  sizes="(max-width: 640px) 280px, 320px"
+                  sizes="(max-width: 640px) 240px, 300px"
                 />
               </div>
             </motion.div>
@@ -227,7 +228,7 @@ const AiPoweredFeature = () => {
               className="
                 relative
                 w-full
-                max-w-[320px] sm:max-w-[480px] md:max-w-[600px] lg:max-w-[900px]
+                max-w-[280px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[750px]
                 aspect-[900/700]
                 transition-all
                 duration-500
@@ -243,8 +244,9 @@ const AiPoweredFeature = () => {
                 alt="Voice Entry Feature Showcase"
                 fill
                 priority
+                quality={100}
                 className="object-contain"
-                sizes="(max-width: 640px) 320px, (max-width: 768px) 480px, (max-width: 1024px) 600px, 900px"
+                sizes="(max-width: 640px) 280px, (max-width: 768px) 400px, (max-width: 1024px) 500px, 750px"
               />
             </div>
           </motion.div>
