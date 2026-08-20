@@ -6,66 +6,58 @@ import { supabase } from "@/lib/supabase";
 const ConfirmEmailModel = () => {
   const [status, setStatus] = useState("checking");
 
-useEffect(() => {
-  const checkConfirmation = async () => {
-    const urlParams = new URLSearchParams(window.location.search);
+  useEffect(() => {
+    const checkConfirmation = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
 
-    const error = urlParams.get("error");
-    const errorCode = urlParams.get("error_code");
-    const code = urlParams.get("code");
+      const error = urlParams.get("error");
+      const errorCode = urlParams.get("error_code");
+      const tokenHash = urlParams.get("token_hash");
+      const type = urlParams.get("type") || "signup";
 
-    // Supabase returned an error
-    if (error) {
-      console.error("Supabase error:", error, errorCode);
-
-      if (errorCode === "otp_expired") {
-        setStatus("expired");
-      } else {
-        setStatus("failed");
-      }
-
-      return;
-    }
-
-    // No code in URL
-    if (!code) {
-      setStatus("invalid");
-      return;
-    }
-
-    try {
-      //  ACTUAL SUPABASE CODE VALIDATION
-      const { data, error: exchangeError } =
-        await supabase.auth.exchangeCodeForSession(code);
-
-      if (exchangeError) {
-        console.error(
-          "Confirmation failed:",
-          exchangeError
-        );
-
-        setStatus("failed");
+      if (error) {
+        console.error("Supabase error:", error, errorCode);
+        setStatus(errorCode === "otp_expired" ? "expired" : "failed");
         return;
       }
 
-      console.log("Verified user:", data.user);
+      if (!tokenHash) {
+        setStatus("invalid");
+        return;
+      }
 
-      setStatus("success");
+      try {
+        const { data, error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: type as any, // "signup" | "email" | "recovery" etc.
+        });
 
-      // Remove code from URL
-      window.history.replaceState(
-        {},
-        document.title,
-        window.location.pathname
-      );
-    } catch (err) {
-      console.error("Confirmation error:", err);
-      setStatus("failed");
-    }
-  };
+        if (verifyError) {
+          console.error("Confirmation failed:", verifyError);
+          setStatus("failed");
+          return;
+        }
 
-  checkConfirmation();
-}, []);
+        if (!data.session || !data.user) {
+          console.error("No session/user returned");
+          setStatus("failed");
+          return;
+        }
+
+        console.log("Verified user:", data.user);
+        setStatus("success");
+
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (err) {
+        console.error("Confirmation error:", err);
+        setStatus("failed");
+      }
+    };
+
+    checkConfirmation();
+  }, []);
+
+ 
 
   if (status === "checking") {
     return <div>Checking confirmation...</div>;
