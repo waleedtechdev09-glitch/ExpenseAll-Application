@@ -99,12 +99,17 @@ const ConfirmEmailModel = () => {
             You can now continue using your account.
           </p>
 
+         
           <button
-            type="button"
-            className="mt-7 w-full rounded-lg bg-[#6C63FE] cursor-pointer px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-          >
-            Open App Now
-          </button>
+  type="button"
+  onClick={() => {
+    window.location.href =
+      "intent://open#Intent;scheme=expenseall;package=com.elexoft.expenseall.app;end";
+  }}
+  className="mt-7 w-full rounded-lg bg-[#6C63FE] cursor-pointer px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+>
+  Open App Now
+</button>
         </div>
       </div>
     );
