@@ -1,20 +1,23 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const ConfirmEmailModel = () => {
   const [status, setStatus] = useState("checking");
 
- useEffect(() => {
-  const checkConfirmation = () => {
+useEffect(() => {
+  const checkConfirmation = async () => {
     const urlParams = new URLSearchParams(window.location.search);
 
     const error = urlParams.get("error");
     const errorCode = urlParams.get("error_code");
     const code = urlParams.get("code");
 
-    // Supabase error
+    // Supabase returned an error
     if (error) {
+      console.error("Supabase error:", error, errorCode);
+
       if (errorCode === "otp_expired") {
         setStatus("expired");
       } else {
@@ -24,8 +27,29 @@ const ConfirmEmailModel = () => {
       return;
     }
 
-    // Supabase email confirmation
-    if (code) {
+    // No code in URL
+    if (!code) {
+      setStatus("invalid");
+      return;
+    }
+
+    try {
+      //  ACTUAL SUPABASE CODE VALIDATION
+      const { data, error: exchangeError } =
+        await supabase.auth.exchangeCodeForSession(code);
+
+      if (exchangeError) {
+        console.error(
+          "Confirmation failed:",
+          exchangeError
+        );
+
+        setStatus("failed");
+        return;
+      }
+
+      console.log("Verified user:", data.user);
+
       setStatus("success");
 
       // Remove code from URL
@@ -34,11 +58,10 @@ const ConfirmEmailModel = () => {
         document.title,
         window.location.pathname
       );
-
-      return;
+    } catch (err) {
+      console.error("Confirmation error:", err);
+      setStatus("failed");
     }
-
-    setStatus("invalid");
   };
 
   checkConfirmation();
