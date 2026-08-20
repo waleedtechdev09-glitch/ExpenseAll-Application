@@ -5,24 +5,30 @@ import { supabase } from "@/lib/supabase";
 
 const ConfirmEmailModel = () => {
   const [status, setStatus] = useState("checking");
+    const [message, setMessage] = useState("");
+
 
   useEffect(() => {
     const checkConfirmation = async () => {
       const urlParams = new URLSearchParams(window.location.search);
 
+
       const error = urlParams.get("error");
       const errorCode = urlParams.get("error_code");
-      const tokenHash = urlParams.get("token_hash");
+      const tokenHash = urlParams.get("code");
+
       const type = urlParams.get("type") || "signup";
 
       if (error) {
         console.error("Supabase error:", error, errorCode);
+        setMessage(error);
         setStatus(errorCode === "otp_expired" ? "expired" : "failed");
         return;
       }
 
       if (!tokenHash) {
         setStatus("invalid");
+        setMessage("Invalid confirmation link.");
         return;
       }
 
@@ -31,16 +37,18 @@ const ConfirmEmailModel = () => {
           token_hash: tokenHash,
           type: type as any, // "signup" | "email" | "recovery" etc.
         });
-
+console.log("Verification response:", data, verifyError);
         if (verifyError) {
           console.error("Confirmation failed:", verifyError);
           setStatus("failed");
+          setMessage(verifyError.message || "Confirmation failed.");
           return;
         }
 
         if (!data.session || !data.user) {
           console.error("No session/user returned");
           setStatus("failed");
+          setMessage("Confirmation failed.");
           return;
         }
 
@@ -51,6 +59,7 @@ const ConfirmEmailModel = () => {
       } catch (err) {
         console.error("Confirmation error:", err);
         setStatus("failed");
+        setMessage("An unexpected error occurred.");
       }
     };
 
@@ -119,7 +128,7 @@ const ConfirmEmailModel = () => {
           </h1>
 
           <p className="mt-3 text-gray-500">
-            This confirmation link has expired.
+           {message || "This confirmation link has expired. Please request a new one."}
           </p>
         </div>
       </div>
@@ -133,7 +142,7 @@ const ConfirmEmailModel = () => {
           Invalid Access
         </h1>
         <p className="mt-3 text-gray-500">
-          This is not a valid confirmation link.
+          {message || "This is not a valid confirmation link."}
         </p>
       </div>
     </div>
