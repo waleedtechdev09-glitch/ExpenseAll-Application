@@ -3,74 +3,245 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-const ConfirmEmailModel = () => {
-  const [status, setStatus] = useState("checking");
-    const [message, setMessage] = useState("");
+type Status = "checking" | "success" | "expired" | "failed";
 
+const ConfirmEmailModel = () => {
+  const [status, setStatus] = useState<Status>("checking");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
+    let mounted = true;
+
     const checkConfirmation = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-
-
-      const error = urlParams.get("error");
-      const errorCode = urlParams.get("error_code");
-      const tokenHash = urlParams.get("code");
-
-      const type = urlParams.get("type") || "signup";
-
-      if (error) {
-        console.error("Supabase error:", error, errorCode);
-        setMessage(error);
-        setStatus(errorCode === "otp_expired" ? "expired" : "failed");
-        return;
-      }
-
-      if (!tokenHash) {
-        setStatus("invalid");
-        setMessage("Invalid confirmation link.");
-        return;
-      }
-
       try {
-        const { data, error: verifyError } = await supabase.auth.verifyOtp({
-          token_hash: tokenHash,
-          type: type as any, // "signup" | "email" | "recovery" etc.
-        });
-console.log("Verification response:", data, verifyError);
-        if (verifyError) {
-          console.error("Confirmation failed:", verifyError);
-          setStatus("failed");
-          setMessage(verifyError.message || "Confirmation failed.");
+        console.log("Current URL:", window.location.href);
+        console.log("Hash:", window.location.hash);
+
+        /*
+         * --------------------------------------------------
+         * 1. Check URL for Supabase errors
+         * --------------------------------------------------
+         */
+
+        const hashParams = new URLSearchParams(
+          window.location.hash.substring(1)
+        );
+
+        const queryParams = new URLSearchParams(
+          window.location.search
+        );
+
+        const error =
+          hashParams.get("error") ||
+          queryParams.get("error");
+
+        const errorCode =
+          hashParams.get("error_code") ||
+          queryParams.get("error_code");
+
+        const errorDescription =
+          hashParams.get("error_description") ||
+          queryParams.get("error_description");
+
+        if (error) {
+          console.error(
+            "Supabase confirmation error:",
+            error,
+            errorCode,
+            errorDescription
+          );
+
+          if (!mounted) return;
+
+          setMessage(
+            errorDescription ||
+              error ||
+              "Invalid confirmation link."
+          );
+
+          if (errorCode === "otp_expired") {
+            setStatus("expired");
+          } else {
+            setStatus("failed");
+          }
+
           return;
         }
 
-        if (!data.session || !data.user) {
-          console.error("No session/user returned");
-          setStatus("failed");
-          setMessage("Confirmation failed.");
+        /*
+         * --------------------------------------------------
+         * 2. Check whether Supabase already created session
+         * --------------------------------------------------
+         */
+
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        console.log(
+          "Confirmation session:",
+          session
+        );
+
+        if (session?.user) {
+          console.log(
+            "Confirmed user:",
+            session.user
+          );
+
+          if (!mounted) return;
+
+          setStatus("success");
+
+          /*
+           * Remove authentication information
+           * from the browser URL.
+           */
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+
           return;
         }
 
-        console.log("Verified user:", data.user);
-        setStatus("success");
+        /*
+         * --------------------------------------------------
+         * 3. Listen for auth state change
+         * --------------------------------------------------
+         */
 
-        window.history.replaceState({}, document.title, window.location.pathname);
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange(
+          (event, session) => {
+            console.log(
+              "Auth event:",
+              event
+            );
+
+            console.log(
+              "Session:",
+              session
+            );
+
+            if (!mounted) return;
+
+            if (
+              session?.user &&
+              (
+                event === "SIGNED_IN" ||
+                event === "INITIAL_SESSION"
+              )
+            ) {
+              console.log(
+                "Email confirmation successful"
+              );
+
+              setStatus("success");
+
+              window.history.replaceState(
+                {},
+                document.title,
+                window.location.pathname
+              );
+            }
+          }
+        );
+
+        /*
+         * --------------------------------------------------
+         * 4. Give Supabase a moment to process URL
+         * --------------------------------------------------
+         */
+
+        setTimeout(async () => {
+          if (!mounted) return;
+
+          const {
+            data: { session: currentSession },
+          } = await supabase.auth.getSession();
+
+          console.log(
+            "Session after processing URL:",
+            currentSession
+          );
+
+          if (currentSession?.user) {
+            setStatus("success");
+
+            window.history.replaceState(
+              {},
+              document.title,
+              window.location.pathname
+            );
+          } else {
+            setStatus("failed");
+            setMessage(
+              "Invalid confirmation link."
+            );
+          }
+        }, 1000);
+
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (err) {
-        console.error("Confirmation error:", err);
+        console.error(
+          "Confirmation error:",
+          err
+        );
+
+        if (!mounted) return;
+
         setStatus("failed");
-        setMessage("An unexpected error occurred.");
+        setMessage(
+          "An unexpected error occurred."
+        );
       }
     };
 
-    checkConfirmation();
+    const cleanup = checkConfirmation();
+
+    return () => {
+      mounted = false;
+
+      cleanup.then((unsubscribe) => {
+        if (typeof unsubscribe === "function") {
+          unsubscribe();
+        }
+      });
+    };
   }, []);
 
- 
+  /*
+   * --------------------------------------------------
+   * CHECKING
+   * --------------------------------------------------
+   */
 
   if (status === "checking") {
-    return <div>Checking confirmation...</div>;
+    return (
+      <div className="min-h-screen bg-[#0E2A5E] flex items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-lg">
+          <h1 className="text-2xl font-bold text-gray-700">
+            Checking confirmation...
+          </h1>
+
+          <p className="mt-3 text-gray-500">
+            Please wait while we verify your email.
+          </p>
+        </div>
+      </div>
+    );
   }
+
+  /*
+   * --------------------------------------------------
+   * SUCCESS
+   * --------------------------------------------------
+   */
 
   if (status === "success") {
     return (
@@ -99,8 +270,9 @@ console.log("Verification response:", data, verifyError);
           </h1>
 
           <p className="mt-3 text-md leading-6 text-gray-500">
-            Your email address has been successfully verified.
-            You can now continue using your account.
+            Your email address has been successfully
+            verified. You can now continue using your
+            account.
           </p>
 
           <button
@@ -119,31 +291,50 @@ console.log("Verification response:", data, verifyError);
     );
   }
 
+  /*
+   * --------------------------------------------------
+   * EXPIRED
+   * --------------------------------------------------
+   */
+
   if (status === "expired") {
     return (
-      <div className="min-h-screen bg-[#0E2A5E] flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl text-center">
+      <div className="min-h-screen bg-[#0E2A5E] flex items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-lg">
+
           <h1 className="text-2xl font-bold text-gray-700">
             Link Expired
           </h1>
 
           <p className="mt-3 text-gray-500">
-           {message || "This confirmation link has expired. Please request a new one."}
+            {message ||
+              "This confirmation link has expired. Please request a new one."}
           </p>
+
         </div>
       </div>
     );
   }
 
+  /*
+   * --------------------------------------------------
+   * FAILED
+   * --------------------------------------------------
+   */
+
   return (
-    <div className="min-h-screen bg-[#0E2A5E] flex items-center justify-center">
-      <div className="bg-white p-8 rounded-2xl text-center">
+    <div className="min-h-screen bg-[#0E2A5E] flex items-center justify-center px-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-lg">
+
         <h1 className="text-2xl font-bold text-gray-700">
           Invalid Access
         </h1>
+
         <p className="mt-3 text-gray-500">
-          {message || "This is not a valid confirmation link."}
+          {message ||
+            "This is not a valid confirmation link."}
         </p>
+
       </div>
     </div>
   );
