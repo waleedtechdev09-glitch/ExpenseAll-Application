@@ -89,12 +89,36 @@ export default function ResetPasswordPage() {
     };
   }, []);
 
+  // ---- Password validation ----
+  const validatePassword = (pwd: string): string | null => {
+    if (pwd.length < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+    if (pwd.length > 20) {
+      return "Password must not exceed 20 characters.";
+    }
+    if (!/[a-z]/.test(pwd)) {
+      return "Password must include at least one lowercase letter.";
+    }
+    if (!/[A-Z]/.test(pwd)) {
+      return "Password must include at least one uppercase letter.";
+    }
+    if (!/[0-9]/.test(pwd)) {
+      return "Password must include at least one number.";
+    }
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pwd)) {
+      return "Password must include at least one special character.";
+    }
+    return null;
+  };
+
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage("");
 
-    if (password.length < 6) {
-      setMessage("Password must be at least 6 characters.");
+    const validationError = validatePassword(password);
+    if (validationError) {
+      setMessage(validationError);
       return;
     }
 
@@ -207,6 +231,10 @@ export default function ResetPasswordPage() {
       <p className="mt-1 text-sm text-slate-500">
         Choose something you haven't used before.
       </p>
+      <p className="mt-2 text-xs text-slate-400">
+        Must be 8–20 characters and include an uppercase letter, a lowercase
+        letter, a number, and a special character.
+      </p>
 
       <form onSubmit={handleResetPassword} className="mt-6 space-y-4">
         <div>
@@ -219,7 +247,8 @@ export default function ResetPasswordPage() {
               placeholder="Enter new password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              minLength={6}
+              minLength={8}
+              maxLength={20}
               required
               disabled={loading}
               className="w-full rounded-lg border border-slate-300 px-3 py-2.5 pr-10 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-1 focus:ring-slate-900 disabled:opacity-50"
@@ -250,7 +279,8 @@ export default function ResetPasswordPage() {
               placeholder="Confirm new password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              minLength={6}
+              minLength={8}
+              maxLength={20}
               required
               disabled={loading}
               className="w-full rounded-lg border border-slate-300 px-3 py-2.5 pr-10 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-1 focus:ring-slate-900 disabled:opacity-50"
