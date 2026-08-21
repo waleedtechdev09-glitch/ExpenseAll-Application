@@ -18,100 +18,57 @@ export default function ResetPasswordPage() {
     let mounted = true;
 
     const initializeRecovery = async () => {
-      try {
-        // Get ?code=... from URL
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get("code");
+      /*
+       * Listen for password recovery event
+       */
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          console.log("Auth event:", event);
+          console.log("Session:", session);
 
-        console.log("Reset code:", code);
+          if (!mounted) return;
 
-        /*
-         * --------------------------------------------------
-         * CASE 1:
-         * Supabase redirected with ?code=...
-         * --------------------------------------------------
-         */
-        if (code) {
-          const { data, error } =
-            await supabase.auth.exchangeCodeForSession(code);
-
-          if (error) {
-            console.error("Code exchange failed:", error);
-
-            if (mounted) {
+          if (event === "PASSWORD_RECOVERY") {
+            if (session) {
+              setStatus("ready");
+            } else {
               setStatus("failed");
               setMessage(
                 "This password reset link is invalid or has expired."
               );
             }
-
-            return;
           }
-
-          console.log("Recovery session:", data.session);
-
-          if (!data.session) {
-            if (mounted) {
-              setStatus("failed");
-              setMessage(
-                "Unable to create a password reset session."
-              );
-            }
-
-            return;
-          }
-
-          if (mounted) {
-            setStatus("ready");
-          }
-
-          return;
         }
+      );
 
-        /*
-         * --------------------------------------------------
-         * CASE 2:
-         * Maybe Supabase already created a session
-         * --------------------------------------------------
-         */
+      /*
+       * Wait a little for Supabase to process
+       * the URL fragment.
+       */
+      setTimeout(async () => {
+        if (!mounted) return;
+
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
-        console.log("Existing session:", session);
+        console.log("Recovery session:", session);
+
+        if (!mounted) return;
 
         if (session) {
-          if (mounted) {
-            setStatus("ready");
-          }
-
-          return;
-        }
-
-        /*
-         * --------------------------------------------------
-         * No code + no session
-         * --------------------------------------------------
-         */
-        if (mounted) {
+          setStatus("ready");
+        } else {
           setStatus("failed");
           setMessage(
             "This password reset link is invalid or has expired."
           );
         }
-      } catch (error) {
-        console.error(
-          "Password recovery initialization failed:",
-          error
-        );
+      }, 500);
 
-        if (mounted) {
-          setStatus("failed");
-          setMessage(
-            "Something went wrong while verifying the reset link."
-          );
-        }
-      }
+      return subscription;
     };
 
     initializeRecovery();
@@ -128,13 +85,11 @@ export default function ResetPasswordPage() {
 
     setMessage("");
 
-    // Validate password
     if (password.length < 6) {
       setMessage("Password must be at least 6 characters.");
       return;
     }
 
-    // Validate confirmation
     if (password !== confirmPassword) {
       setMessage("Passwords do not match.");
       return;
@@ -144,7 +99,7 @@ export default function ResetPasswordPage() {
 
     try {
       /*
-       * Make sure the recovery session still exists
+       * Verify recovery session
        */
       const {
         data: { session },
@@ -155,45 +110,38 @@ export default function ResetPasswordPage() {
         setMessage(
           "Your reset session has expired. Please request a new reset link."
         );
-
         return;
       }
 
       /*
-       * Update password
+       * Change password
        */
       const { error } = await supabase.auth.updateUser({
-        password: password,
+        password,
       });
 
       if (error) {
         console.error("Password update failed:", error);
 
         setMessage(error.message);
-        setStatus("failed");
-
         return;
       }
 
       /*
-       * Password successfully changed
+       * Success
        */
       setStatus("success");
-      setMessage("Your password has been successfully changed.");
 
       setPassword("");
       setConfirmPassword("");
 
       /*
-       * Sign out after password reset.
-       * This prevents the recovery session from
-       * remaining active in the browser.
+       * Remove recovery session
        */
       await supabase.auth.signOut();
     } catch (error) {
       console.error("Password reset failed:", error);
 
-      setStatus("failed");
       setMessage(
         "Something went wrong while changing your password."
       );
@@ -203,9 +151,7 @@ export default function ResetPasswordPage() {
   };
 
   /*
-   * --------------------------------------------------
-   * CHECKING
-   * --------------------------------------------------
+   * Checking
    */
   if (status === "checking") {
     return (
@@ -216,7 +162,7 @@ export default function ResetPasswordPage() {
           </h1>
 
           <p className="mt-2 text-gray-500">
-            Please wait while we verify your password reset link.
+            Please wait while we verify your reset link.
           </p>
         </div>
       </main>
@@ -224,9 +170,7 @@ export default function ResetPasswordPage() {
   }
 
   /*
-   * --------------------------------------------------
-   * FAILED
-   * --------------------------------------------------
+   * Failed
    */
   if (status === "failed") {
     return (
@@ -237,8 +181,7 @@ export default function ResetPasswordPage() {
           </h1>
 
           <p className="mt-3 text-gray-600">
-            {message ||
-              "This password reset link is invalid or has expired."}
+            {message}
           </p>
         </div>
       </main>
@@ -246,9 +189,7 @@ export default function ResetPasswordPage() {
   }
 
   /*
-   * --------------------------------------------------
-   * SUCCESS
-   * --------------------------------------------------
+   * Success
    */
   if (status === "success") {
     return (
@@ -267,9 +208,7 @@ export default function ResetPasswordPage() {
   }
 
   /*
-   * --------------------------------------------------
-   * READY
-   * --------------------------------------------------
+   * Ready
    */
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
@@ -286,7 +225,6 @@ export default function ResetPasswordPage() {
           onSubmit={handleResetPassword}
           className="mt-6 space-y-4"
         >
-          {/* New password */}
           <div>
             <label className="mb-1 block text-sm font-medium">
               New Password
@@ -294,9 +232,9 @@ export default function ResetPasswordPage() {
 
             <input
               type="password"
-              placeholder="Enter new password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter new password"
               minLength={6}
               required
               disabled={loading}
@@ -304,7 +242,6 @@ export default function ResetPasswordPage() {
             />
           </div>
 
-          {/* Confirm password */}
           <div>
             <label className="mb-1 block text-sm font-medium">
               Confirm Password
@@ -312,11 +249,11 @@ export default function ResetPasswordPage() {
 
             <input
               type="password"
-              placeholder="Confirm new password"
               value={confirmPassword}
               onChange={(e) =>
                 setConfirmPassword(e.target.value)
               }
+              placeholder="Confirm new password"
               minLength={6}
               required
               disabled={loading}
@@ -324,14 +261,12 @@ export default function ResetPasswordPage() {
             />
           </div>
 
-          {/* Message */}
           {message && (
             <p className="text-sm text-red-600">
               {message}
             </p>
           )}
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
