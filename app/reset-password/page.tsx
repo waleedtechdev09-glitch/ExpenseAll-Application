@@ -44,6 +44,17 @@ const requirements = [
   },
 ];
 
+// ---- Shell moved OUTSIDE the component so it's not recreated on every render ----
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 px-4">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
+        {children}
+      </div>
+    </main>
+  );
+}
+
 export default function ResetPasswordPage() {
   const [status, setStatus] = useState<Status>("checking");
   const [showPassword, setShowPassword] = useState(false);
@@ -174,15 +185,6 @@ export default function ResetPasswordPage() {
       setLoading(false);
     }
   };
-
-  // Shared shell so every state sits inside the same card frame
-  const Shell = ({ children }: { children: React.ReactNode }) => (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
-        {children}
-      </div>
-    </main>
-  );
 
   if (status === "checking") {
     return (
