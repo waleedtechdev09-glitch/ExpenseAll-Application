@@ -7,12 +7,21 @@ import {
 
 export async function POST(req: Request) {
   try {
+    console.log("🔥 CONTACT API CALLED");
+
     const {
       name,
       email,
       subject,
       message,
     } = await req.json();
+
+    console.log("📩 Contact data received:", {
+      name,
+      email,
+      subject,
+      messageProvided: !!message,
+    });
 
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -27,6 +36,11 @@ export async function POST(req: Request) {
     // ==========================================
     // ADMIN EMAIL
     // ==========================================
+
+    console.log(
+      "📤 Sending admin email to:",
+      process.env.CONTACT_EMAIL
+    );
 
     const adminEmail = await sendEmail({
       to: process.env.CONTACT_EMAIL!,
@@ -48,16 +62,19 @@ export async function POST(req: Request) {
       },
     });
 
+    console.log("📨 Admin email result:", adminEmail);
+
     if (!adminEmail.ok) {
       console.error(
-        "Admin email failed:",
+        "❌ Admin email failed:",
         adminEmail.error
       );
 
       return NextResponse.json(
         {
           success: false,
-          message: adminEmail.error || "Failed to send email.",
+          message:
+            adminEmail.error || "Failed to send email.",
         },
         { status: 500 }
       );
@@ -66,6 +83,11 @@ export async function POST(req: Request) {
     // ==========================================
     // USER CONFIRMATION EMAIL
     // ==========================================
+
+    console.log(
+      "📤 Sending confirmation email to:",
+      email
+    );
 
     const userEmail = await sendEmail({
       to: email,
@@ -85,9 +107,11 @@ export async function POST(req: Request) {
       },
     });
 
+    console.log("📨 User email result:", userEmail);
+
     if (!userEmail.ok) {
       console.error(
-        "User email failed:",
+        "❌ User email failed:",
         userEmail.error
       );
 
@@ -101,12 +125,15 @@ export async function POST(req: Request) {
       );
     }
 
+    console.log("✅ BOTH EMAILS SENT");
+
     return NextResponse.json({
       success: true,
       message: "Your message has been sent successfully.",
     });
+
   } catch (error) {
-    console.error("Contact API error:", error);
+    console.error("❌ Contact API error:", error);
 
     return NextResponse.json(
       {
