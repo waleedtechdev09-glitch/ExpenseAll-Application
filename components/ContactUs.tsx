@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FormEvent, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -8,9 +8,13 @@ import { toast } from "react-toastify";
 const ContactUs = () => {
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    e: React.SubmitEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
-console.log("CONTACT FORM SUBMIT");
+
+    console.log("CONTACT FORM SUBMIT");
+
     setLoading(true);
 
     const form = e.currentTarget;
@@ -39,16 +43,22 @@ console.log("CONTACT FORM SUBMIT");
 
       if (!response.ok) {
         throw new Error(
-          result.message || "Something went wrong. Please try again."
+          result.message ||
+            "Something went wrong. Please try again."
         );
       }
 
+      // Reset form after successful submission
       form.reset();
 
-      toast.success("Your message has been sent successfully!");
+      // Success toast
+      toast.success(
+        "Your message has been sent successfully!"
+      );
     } catch (err) {
       console.error("Contact form error:", err);
 
+      // Error toast
       toast.error(
         err instanceof Error
           ? err.message
@@ -64,7 +74,7 @@ console.log("CONTACT FORM SUBMIT");
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
 
-          {/* Left Side */}
+          {/* ================= LEFT SIDE ================= */}
           <div>
             <h2 className="font-manrope text-white text-4xl md:text-5xl font-medium">
               Get in Touch
@@ -80,10 +90,11 @@ console.log("CONTACT FORM SUBMIT");
               onSubmit={handleSubmit}
               className="mt-10 space-y-6"
             >
-              {/* Name */}
+              {/* ================= NAME ================= */}
               <div>
                 <label className="block text-sm text-gray-300 mb-2">
-                  Full Name <span className="text-red-400">*</span>
+                  Full Name{" "}
+                  <span className="text-red-400">*</span>
                 </label>
 
                 <input
@@ -95,10 +106,11 @@ console.log("CONTACT FORM SUBMIT");
                 />
               </div>
 
-              {/* Email */}
+              {/* ================= EMAIL ================= */}
               <div>
                 <label className="block text-sm text-gray-300 mb-2">
-                  Email Address <span className="text-red-400">*</span>
+                  Email Address{" "}
+                  <span className="text-red-400">*</span>
                 </label>
 
                 <input
@@ -110,7 +122,7 @@ console.log("CONTACT FORM SUBMIT");
                 />
               </div>
 
-              {/* Subject */}
+              {/* ================= SUBJECT ================= */}
               <div>
                 <label className="block text-sm text-gray-300 mb-2">
                   Subject
@@ -124,7 +136,7 @@ console.log("CONTACT FORM SUBMIT");
                 />
               </div>
 
-              {/* Message */}
+              {/* ================= MESSAGE ================= */}
               <div>
                 <label className="block text-sm text-gray-300 mb-2">
                   Message
@@ -139,7 +151,7 @@ console.log("CONTACT FORM SUBMIT");
                 />
               </div>
 
-              {/* Submit */}
+              {/* ================= SUBMIT BUTTON ================= */}
               <button
                 type="submit"
                 disabled={loading}
@@ -154,12 +166,21 @@ console.log("CONTACT FORM SUBMIT");
             </form>
           </div>
 
-          {/* Right Side */}
+          {/* ================= RIGHT SIDE ================= */}
           <motion.div
             className="hidden lg:flex justify-end items-center"
-            initial={{ opacity: 0, x: 100 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
+            initial={{
+              opacity: 0,
+              x: 100,
+            }}
+            whileInView={{
+              opacity: 1,
+              x: 0,
+            }}
+            viewport={{
+              once: true,
+              amount: 0.2,
+            }}
             transition={{
               duration: 0.9,
               ease: "easeOut",
