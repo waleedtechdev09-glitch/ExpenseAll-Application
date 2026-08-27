@@ -10,7 +10,7 @@ const ContactUs = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+console.log("CONTACT FORM SUBMIT");
     setLoading(true);
 
     const form = e.currentTarget;
