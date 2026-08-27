@@ -12,8 +12,11 @@ const ContactUs = () => {
     e: React.SubmitEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
+    alert("SUBMIT HANDLER WORKING");
 
-    console.log("CONTACT FORM SUBMIT");
+  console.log("🔥 SUBMIT HANDLER WORKING");
+    
+  
 
     setLoading(true);
 
