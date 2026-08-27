@@ -1,11 +1,69 @@
-import React from "react";
+"use client";
+
+import React, { FormEvent, useState } from "react";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
+import { toast } from "react-toastify";
 
 const ContactUs = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setLoading(true);
+
+    const form = e.currentTarget;
+
+    const formData = new FormData(form);
+
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      subject: formData.get("subject"),
+      message: formData.get("message"),
+    };
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      console.log("Contact API response:", result);
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || "Something went wrong. Please try again."
+        );
+      }
+
+      form.reset();
+
+      toast.success("Your message has been sent successfully!");
+    } catch (err) {
+      console.error("Contact form error:", err);
+
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to send your message. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="bg-[#071B3B] mt-10 py-16 lg:py-24">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+
           {/* Left Side */}
           <div>
             <h2 className="font-manrope text-white text-4xl md:text-5xl font-medium">
@@ -18,7 +76,10 @@ const ContactUs = () => {
               as possible.
             </p>
 
-            <form className="mt-10 space-y-6">
+            <form
+              onSubmit={handleSubmit}
+              className="mt-10 space-y-6"
+            >
               {/* Name */}
               <div>
                 <label className="block text-sm text-gray-300 mb-2">
@@ -27,7 +88,9 @@ const ContactUs = () => {
 
                 <input
                   type="text"
+                  name="name"
                   placeholder="John Doe"
+                  required
                   className="w-full h-12 rounded-md bg-white/10 border border-white/5 px-4 text-white placeholder:text-gray-400 outline-none focus:border-[#6C63FF] transition"
                 />
               </div>
@@ -40,7 +103,9 @@ const ContactUs = () => {
 
                 <input
                   type="email"
+                  name="email"
                   placeholder="Enter Email Address"
+                  required
                   className="w-full h-12 rounded-md bg-white/10 border border-white/5 px-4 text-white placeholder:text-gray-400 outline-none focus:border-[#6C63FF] transition"
                 />
               </div>
@@ -53,6 +118,7 @@ const ContactUs = () => {
 
                 <input
                   type="text"
+                  name="subject"
                   placeholder="Enter Subject"
                   className="w-full h-12 rounded-md bg-white/10 border border-white/5 px-4 text-white placeholder:text-gray-400 outline-none focus:border-[#6C63FF] transition"
                 />
@@ -65,28 +131,39 @@ const ContactUs = () => {
                 </label>
 
                 <textarea
+                  name="message"
                   rows={5}
                   placeholder="Enter your message..."
+                  required
                   className="w-full rounded-md bg-white/10 border border-white/5 p-4 text-white placeholder:text-gray-400 outline-none resize-none focus:border-[#6C63FF] transition"
                 />
               </div>
 
+              {/* Submit */}
               <button
                 type="submit"
-                className="bg-[#6C63FF] hover:bg-[#5d54ff] text-white cursor-pointer px-10 py-3 rounded-full font-medium transition-all duration-300"
+                disabled={loading}
+                className="bg-[#6C63FF] hover:bg-[#5d54ff] disabled:opacity-60 disabled:cursor-not-allowed text-white cursor-pointer px-10 py-3 rounded-full font-medium transition-all duration-300 flex items-center gap-2"
               >
-                Send
+                {loading && (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                )}
+
+                {loading ? "Sending..." : "Send"}
               </button>
             </form>
           </div>
 
-          {/* Right Side - Only Visible on Large Screens */}
+          {/* Right Side */}
           <motion.div
             className="hidden lg:flex justify-end items-center"
             initial={{ opacity: 0, x: 100 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.9, ease: "easeOut" }}
+            transition={{
+              duration: 0.9,
+              ease: "easeOut",
+            }}
           >
             <img
               src="/assets/illustration.png"
@@ -94,6 +171,7 @@ const ContactUs = () => {
               className="w-[420px] xl:w-[500px] h-auto object-contain"
             />
           </motion.div>
+
         </div>
       </div>
     </section>
