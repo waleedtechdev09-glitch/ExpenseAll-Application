@@ -143,16 +143,16 @@ export default function ResetPasswordPage() {
 
           const accessToken = hashParams.get("access_token");
           const refreshToken = hashParams.get("refresh_token");
-          const type = hashParams.get("type");
+          // const type = hashParams.get("type");
 
           // Make sure this is a Supabase recovery link
-          if (type !== "recovery") {
-            if (mounted) {
-              setStatus("failed");
-              setFormError("Invalid password reset link.");
-            }
-            return;
-          }
+          // if (type !== "recovery") {
+          //   if (mounted) {
+          //     setStatus("failed");
+          //     setFormError("Invalid password reset link.");
+          //   }
+          //   return;
+          // }
 
           if (accessToken && refreshToken) {
             const { data, error } = await supabase.auth.setSession({
