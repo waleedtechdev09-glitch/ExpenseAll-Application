@@ -75,6 +75,8 @@ async function checkResetRequestWindow(
     .eq("email", email)
     .maybeSingle();
 
+    console.log("checkResetRequestWindow data:", data, "error:", error);
+
   if (error) {
     console.error("password_reset_requests lookup error:", error);
     return {
@@ -93,6 +95,9 @@ async function checkResetRequestWindow(
 
   const lastSentAt = new Date(data.last_sent_at).getTime();
   const elapsed = Date.now() - lastSentAt;
+
+
+  console.log(`Reset request for ${email} was sent at ${data.last_sent_at} (${lastSentAt}), elapsed: ${elapsed} ms`);
 
   if (elapsed > RESET_WINDOW_MS) {
     return {
