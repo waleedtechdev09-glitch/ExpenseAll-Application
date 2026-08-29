@@ -9,6 +9,9 @@ import { supabase } from "@/lib/supabase";
 
 type Status = "checking" | "ready" | "success" | "failed";
 
+// How long a reset request stays valid, in milliseconds.
+const RESET_WINDOW_MS = 2 * 60 * 1000; // 2 minutes
+
 // ---- Zod schema for password validation ----
 const passwordSchema = z
   .object({
@@ -55,6 +58,53 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Looks up the password_reset_requests row for this email and checks
+ * whether last_sent_at is within the allowed RESET_WINDOW_MS.
+ *
+ * Returns:
+ *   - { valid: true }               -> request is still within window, allow reset
+ *   - { valid: false, reason }      -> missing row / expired / query error
+ */
+async function checkResetRequestWindow(
+  email: string
+): Promise<{ valid: boolean; reason?: string }> {
+  const { data, error } = await supabase
+    .from("password_reset_requests")
+    .select("last_sent_at")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (error) {
+    console.error("password_reset_requests lookup error:", error);
+    return {
+      valid: false,
+      reason: "Something went wrong while verifying your reset request.",
+    };
+  }
+
+  if (!data) {
+    // No record of a reset request for this email at all.
+    return {
+      valid: false,
+      reason: "This password reset link is invalid or has expired.",
+    };
+  }
+
+  const lastSentAt = new Date(data.last_sent_at).getTime();
+  const elapsed = Date.now() - lastSentAt;
+
+  if (elapsed > RESET_WINDOW_MS) {
+    return {
+      valid: false,
+      reason:
+        "This password reset link has expired. Please request a new one.",
+    };
+  }
+
+  return { valid: true };
+}
+
 export default function ResetPasswordPage() {
   const [status, setStatus] = useState<Status>("checking");
   const [showPassword, setShowPassword] = useState(false);
@@ -76,204 +126,161 @@ export default function ResetPasswordPage() {
 
   const passwordValue = watch("password") || "";
 
-useEffect(() => {
-  let mounted = true;
+  useEffect(() => {
+    let mounted = true;
 
-  const initializeRecovery = async () => {
-    try {
-      const hash = window.location.hash;
+    const initializeRecovery = async () => {
+      try {
+        const hash = window.location.hash;
 
-      if (hash) {
-        const hashParams = new URLSearchParams(hash.substring(1));
+        if (hash) {
+          const hashParams = new URLSearchParams(hash.substring(1));
 
-        const accessToken = hashParams.get("access_token");
-        const refreshToken = hashParams.get("refresh_token");
-        const type = hashParams.get("type");
+          const accessToken = hashParams.get("access_token");
+          const refreshToken = hashParams.get("refresh_token");
+          const type = hashParams.get("type");
 
-        // Must be a password recovery link
-        if (type !== "recovery") {
-          if (mounted) {
-            setStatus("failed");
-            setFormError("Invalid password reset link.");
+          // Make sure this is a Supabase recovery link
+          if (type !== "recovery") {
+            if (mounted) {
+              setStatus("failed");
+              setFormError("Invalid password reset link.");
+            }
+            return;
           }
-          return;
-        }
 
-        if (!accessToken || !refreshToken) {
+          if (accessToken && refreshToken) {
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+
+            if (error) {
+              if (mounted) {
+                setStatus("failed");
+                setFormError(
+                  "This password reset link is invalid or has expired."
+                );
+              }
+              return;
+            }
+
+            if (data.session) {
+              const email = data.session.user?.email;
+
+              window.history.replaceState(
+                {},
+                document.title,
+                window.location.pathname
+              );
+
+              if (!email) {
+                if (mounted) {
+                  setStatus("failed");
+                  setFormError(
+                    "This password reset link is invalid or has expired."
+                  );
+                }
+                return;
+              }
+
+              // Extra check: enforce the 2-minute window on top of
+              // Supabase's own token validity.
+              const windowCheck = await checkResetRequestWindow(email);
+
+              if (!windowCheck.valid) {
+                if (mounted) {
+                  setStatus("failed");
+                  setFormError(
+                    windowCheck.reason ||
+                      "This password reset link has expired."
+                  );
+                }
+                // Sign out the recovery session since we're rejecting it.
+                await supabase.auth.signOut();
+                return;
+              }
+
+              if (mounted) {
+                setStatus("ready");
+              }
+
+              return;
+            }
+          }
+
+          // If recovery tokens are missing
           if (mounted) {
             setStatus("failed");
             setFormError(
               "This password reset link is invalid or has expired."
             );
           }
+
           return;
         }
 
-        // Create Supabase session
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
+        // No hash in URL — check existing session
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-        if (error || !data.session) {
+        if (session) {
+          const email = session.user?.email;
+
+          if (!email) {
+            if (mounted) {
+              setStatus("failed");
+              setFormError(
+                "This password reset link is invalid or has expired."
+              );
+            }
+            return;
+          }
+
+          const windowCheck = await checkResetRequestWindow(email);
+
+          if (!windowCheck.valid) {
+            if (mounted) {
+              setStatus("failed");
+              setFormError(
+                windowCheck.reason || "This password reset link has expired."
+              );
+            }
+            await supabase.auth.signOut();
+            return;
+          }
+
           if (mounted) {
-            setStatus("failed");
-            setFormError(
-              "This password reset link is invalid or has expired."
-            );
+            setStatus("ready");
           }
           return;
         }
 
-        // ---------------------------------------------
-        // Get email from authenticated recovery session
-        // ---------------------------------------------
-        const userEmail = data.session.user.email;
-
-        if (!userEmail) {
-          await supabase.auth.signOut();
-
-          if (mounted) {
-            setStatus("failed");
-            setFormError("Unable to verify password reset request.");
-          }
-
-          return;
-        }
-
-        // ---------------------------------------------
-        // Check 2-minute expiration from DB
-        // ---------------------------------------------
-        const { data: isValid, error: expiryError } =
-          await supabase.rpc("check_password_reset_expiry", {
-            user_email: userEmail,
-          });
-
-        if (expiryError) {
-          console.error(
-            "Password reset expiry check failed:",
-            expiryError
-          );
-
-          await supabase.auth.signOut();
-
-          if (mounted) {
-            setStatus("failed");
-            setFormError(
-              "Unable to verify password reset link."
-            );
-          }
-
-          return;
-        }
-
-        // ---------------------------------------------
-        // Link expired
-        // ---------------------------------------------
-        if (!isValid) {
-          await supabase.auth.signOut();
-
-          if (mounted) {
-            setStatus("failed");
-            setFormError(
-              "This password reset link has expired. Please request a new reset link."
-            );
-          }
-
-          return;
-        }
-
-        // ---------------------------------------------
-        // Link is valid
-        // ---------------------------------------------
-        if (mounted) {
-          setStatus("ready");
-        }
-
-        // Remove tokens from browser URL
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname
-        );
-
-        return;
-      }
-
-      // ---------------------------------------------
-      // No recovery hash
-      // ---------------------------------------------
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
         if (mounted) {
           setStatus("failed");
           setFormError(
             "This password reset link is invalid or has expired."
           );
         }
-
-        return;
-      }
-
-      // ---------------------------------------------
-      // Check DB expiration for existing session
-      // ---------------------------------------------
-      const userEmail = session.user.email;
-
-      if (!userEmail) {
-        await supabase.auth.signOut();
-
-        if (mounted) {
-          setStatus("failed");
-          setFormError("Unable to verify password reset request.");
-        }
-
-        return;
-      }
-
-      const { data: isValid, error: expiryError } =
-        await supabase.rpc("check_password_reset_expiry", {
-          user_email: userEmail,
-        });
-
-      if (expiryError || !isValid) {
-        await supabase.auth.signOut();
+      } catch (error) {
+        console.error("Recovery initialization error:", error);
 
         if (mounted) {
           setStatus("failed");
           setFormError(
-            "This password reset link has expired. Please request a new reset link."
+            "Something went wrong while verifying the reset link."
           );
         }
-
-        return;
       }
+    };
 
-      if (mounted) {
-        setStatus("ready");
-      }
+    initializeRecovery();
 
-    } catch (error) {
-      console.error("Recovery initialization error:", error);
-
-      if (mounted) {
-        setStatus("failed");
-        setFormError(
-          "Something went wrong while verifying the reset link."
-        );
-      }
-    }
-  };
-
-  initializeRecovery();
-
-  return () => {
-    mounted = false;
-  };
-}, []);
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const onSubmit = async (values: PasswordFormValues) => {
     setFormError("");
@@ -290,6 +297,21 @@ useEffect(() => {
           "Your password reset session has expired. Please request a new reset link."
         );
         return;
+      }
+
+      // Re-validate the 2-minute window right before committing the
+      // change, in case the user sat on the form past the window.
+      const email = session.user?.email;
+      if (email) {
+        const windowCheck = await checkResetRequestWindow(email);
+        if (!windowCheck.valid) {
+          setStatus("failed");
+          setFormError(
+            windowCheck.reason || "This password reset link has expired."
+          );
+          await supabase.auth.signOut();
+          return;
+        }
       }
 
       const { error } = await supabase.auth.updateUser({
