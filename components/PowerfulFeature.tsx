@@ -240,7 +240,7 @@ const PowerfulFeature = () => {
 
             <div className="relative w-[190px] h-[390px] lg:w-[260px] lg:h-[530px] xl:w-[310px] xl:h-[630px] transition-transform duration-500 ease-out hover:scale-[1.01] z-10 flex">
               <Image
-                src="/assets/phone.png"
+                src="/assets/phoneUpdated.svg"
                 alt="Expense Tracker App UI"
                 fill
                 className="object-contain"

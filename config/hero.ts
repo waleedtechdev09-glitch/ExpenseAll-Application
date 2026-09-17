@@ -22,7 +22,7 @@ export const HERO_DATA: HeroConfig = {
   titleSuffix: "",
   description:
     "Manage your income, expenses, budgets, and bills with one intelligent app. Scan receipts, add expenses using your voice, and stay on top of your finances—even when you're offline.",
-  heroImage: "/assets/heroImage.png",
+  heroImage: "/assets/heroImageUpdated.svg", // Main mobile app screenshot image
   playStoreUrl: "https://play.google.com/store", // Click karne par yahan redirect hoga
   appStoreUrl: "https://apps.apple.com", // Click karne par yahan redirect hoga
   playStoreBadge: "/assets/playStore.png", // Play Store ki button image

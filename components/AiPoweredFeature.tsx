@@ -240,7 +240,7 @@ const AiPoweredFeature = () => {
               "
             >
               <Image
-                src="/assets/phone-groups.png"
+                src="/assets/phone-groups-updated.svg"
                 alt="Voice Entry Feature Showcase"
                 fill
                 priority
