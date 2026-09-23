@@ -9,9 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        // Custom font classes setup
-        manrope: ["var(--font-manrope)", "sans-serif"],
-        lato: ["var(--font-lato)", "sans-serif"],
+        manrope: ["var(--font-montserrat)", "sans-serif"],
+        lato: ["var(--font-montserrat)", "sans-serif"],
+        sans: ["var(--font-montserrat)", "sans-serif"],
       },
     },
   },

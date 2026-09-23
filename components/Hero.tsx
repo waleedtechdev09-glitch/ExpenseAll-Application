@@ -19,11 +19,11 @@ const Hero: React.FC<HeroProps> = ({ data = HERO_DATA }) => {
       <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 md:gap-6 lg:gap-8 items-center">
         {/* Left Content */}
         <div className="md:col-span-1 lg:col-span-7 xl:col-span-6 flex flex-col justify-center items-start text-left">
-          <h1 className="font-manrope text-4xl sm:text-4xl md:text-[42px] lg:text-[56px] xl:text-[68px] font-medium tracking-tight leading-[1.15] mb-5">
+          <h1 className=" text-4xl sm:text-4xl md:text-[42px] lg:text-[56px] xl:text-[68px] font-normal tracking-tight leading-[1.15] mb-5">
             Take Control
             <br />
             <span className="text-white">of </span>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 font-semibold">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 font-bold">
               Every Expense.
             </span>
           </h1>

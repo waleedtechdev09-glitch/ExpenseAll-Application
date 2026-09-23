@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { Manrope, Lato } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import SiteChrome from "@/components/SiteChrome";
 import "@/app/globals.css";
 import { Metadata } from "next";
@@ -12,18 +12,11 @@ export const metadata: Metadata = {
   description: "Manage your expenses efficiently with ExpenseAll.",
 };
 
-// Load Manrope for Titles/Headings
-const manrope = Manrope({
+// Load Montserrat for the entire application
+const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"], 
-  variable: "--font-manrope",
-});
-
-// Load Lato for Body/Descriptions
-const lato = Lato({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-lato",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-montserrat",
 });
 
 export default function RootLayout({
@@ -34,21 +27,25 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${lato.variable} overflow-x-hidden`}
+      className={`${montserrat.variable} overflow-x-hidden`}
     >
-      <body className="min-h-screen bg-[#081B3A] text-slate-100 flex flex-col font-sans relative overflow-x-hidden" suppressHydrationWarning>
-        <SiteChrome>{children}
+      <body
+        className="min-h-screen bg-[#081B3A] text-slate-100 flex flex-col font-sans relative overflow-x-hidden"
+        suppressHydrationWarning
+      >
+        <SiteChrome>
+          {children}
           <ToastContainer
-    position="top-right"
-    autoClose={4000}
-    className="mt-16"
-    hideProgressBar={false}
-    newestOnTop
-    closeOnClick
-    pauseOnHover
-    draggable
-    theme="light"
-  />
+            position="top-right"
+            autoClose={4000}
+            className="mt-16"
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            pauseOnHover
+            draggable
+            theme="light"
+          />
         </SiteChrome>
       </body>
     </html>
