@@ -7,6 +7,7 @@ import FAQs from "@/components/FAQs";
 import TrustedPeople from "@/components/TrustedPeople";
 import Pricing from "@/components/Pricing";
 import Finances from "@/components/Finances";
+import ExpenseInAction from "@/components/ExpenseInAction";
 
 const Home = () => {
   return (
@@ -24,6 +25,7 @@ const Home = () => {
         <PowerfulFeature />
       </div>
       <Rating />
+      <ExpenseInAction/>
       <div
         className="
     bg-none
