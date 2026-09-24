@@ -10,6 +10,7 @@ const videos = [
 
 const ExpenseInAction = () => {
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
+  const [expandedVideo, setExpandedVideo] = useState<string | null>(null);
   const iframeRefs = useRef<Record<string, HTMLIFrameElement | null>>({});
 
   useEffect(() => {
@@ -18,8 +19,12 @@ const ExpenseInAction = () => {
       if (event.data?.type !== "expense-video-state") return;
       if (event.data.playing) {
         setPlayingVideo(event.data.label);
+        setExpandedVideo(event.data.label);
       } else {
         setPlayingVideo((current) => current === event.data.label ? null : current);
+        if (event.data.ended) {
+          setExpandedVideo((current) => current === event.data.label ? null : current);
+        }
       }
     };
 
@@ -58,17 +63,17 @@ const ExpenseInAction = () => {
           {videos.map((video) => (
             <div key={video.label} className="flex w-full max-w-[330px] flex-col items-center">
               <div
-                className={`relative w-full overflow-hidden rounded-[11px] bg-[#0E2A5E]/50 ring-1 ring-white/10 transition-[height] duration-300 ${playingVideo === video.label ? "h-[670px]" : "h-[380px]"}`}
+                className={`relative w-full overflow-hidden rounded-[11px] bg-[#0E2A5E]/50 ring-1 ring-white/10 transition-[height] duration-300 ${expandedVideo === video.label ? "h-[670px]" : "h-[380px]"}`}
               >
                 <iframe
                   ref={(element) => { iframeRefs.current[video.label] = element; }}
                   title={`ExpenseAll on ${video.label}`}
-                  srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;width:100vw;height:100vh;background:#0E2A5E;display:flex;align-items:center;justify-content:center"><video src="${video.src}" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover" onplay="parent.postMessage({type:'expense-video-state',label:'${video.label}',playing:true},'*')" onpause="parent.postMessage({type:'expense-video-state',label:'${video.label}',playing:false},'*')" onended="parent.postMessage({type:'expense-video-state',label:'${video.label}',playing:false},'*')"></video><script>window.addEventListener('message',function(event){if(event.data&&event.data.type==='expense-video-play'){document.querySelector('video').play()}else if(event.data&&event.data.type==='expense-video-pause'){document.querySelector('video').pause()}})</script></body></html>`}
+                  srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;width:100vw;height:100vh;background:#0E2A5E;display:flex;align-items:center;justify-content:center"><video src="${video.src}" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover" onplay="parent.postMessage({type:'expense-video-state',label:'${video.label}',playing:true},'*')" onpause="parent.postMessage({type:'expense-video-state',label:'${video.label}',playing:false},'*')" onended="parent.postMessage({type:'expense-video-state',label:'${video.label}',playing:false,ended:true},'*')"></video><script>window.addEventListener('message',function(event){if(event.data&&event.data.type==='expense-video-play'){document.querySelector('video').play()}else if(event.data&&event.data.type==='expense-video-pause'){document.querySelector('video').pause()}})</script></body></html>`}
                   className="h-full w-full border-0"
                   allow="autoplay; fullscreen; picture-in-picture"
                   allowFullScreen
                 />
-                {playingVideo !== video.label && (
+                {playingVideo !== video.label && expandedVideo !== video.label && (
                   <button
                     type="button"
                     onClick={() => playVideo(video.label)}
