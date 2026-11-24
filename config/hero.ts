@@ -21,9 +21,9 @@ export const HERO_DATA: HeroConfig = {
   highlightedText: "Every Expense.",
   titleSuffix: "",
   description:
-    "Manage your income, expenses, budgets, and bills with one intelligent app. Scan receipts, add expenses using your voice, and stay on top of your finances—even when you're offline.",
+    "Keep track of your money without making things complicated. ExpenseAll is a personal expense tracker that helps you record daily spending, manage income and plan your budget in one place.",
   heroImage: "/assets/heroImageUpdated.svg", // Main mobile app screenshot image
-  playStoreUrl: "https://play.google.com/store", // Click karne par yahan redirect hoga
+  playStoreUrl: "https://play.google.com/store/apps/details?id=com.elexoft.expenseall.app", // Click karne par yahan redirect hoga
   appStoreUrl: "https://apps.apple.com", // Click karne par yahan redirect hoga
   playStoreBadge: "/assets/playStore.png", // Play Store ki button image
   appStoreBadge: "/assets/apple.png", // App Store ki button image

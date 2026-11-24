@@ -58,7 +58,7 @@ const TrustedPeople = () => {
       <div className="relative max-w-7xl mx-auto px-5">
         {/* Heading - Left aligned on mobile, center on larger screens */}
         <div className="text-left md:text-center mb-14">
-          <h2 className="font-manrope text-4xl md:text-4xl lg:text-3xl xl:text-5xl font-medium text-white leading-tight">
+          <h2 className="font-manrope text-4xl md:text-4xl lg:text-3xl xl:text-4xl font-medium text-white leading-tight">
             <span className="text-cyan-400 font-bold">Trusted by People</span>{" "}
             Who Value Every Rupee
           </h2>

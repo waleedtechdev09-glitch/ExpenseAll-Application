@@ -152,15 +152,14 @@ const PowerfulFeature = () => {
         {/* Header Section */}
         <div className="text-left md:text-center max-w-3xl mx-auto mb-8 md:mb-2 lg:mb-8 xl:mb-8">
           <h2 className="font-manrope text-4xl sm:text-4xl md:text-4xl font-extra-bold tracking-tight mb-3 leading-tight">
-            Powerful{" "}
+            Track Your {" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 font-semibold">
-              Features
+              Daily {" "}
             </span>
-            . Intuitive Experience.
+             Expenses .
           </h2>
           <p className="font-lato text-slate-300 text-[15px] sm:text-[17px] font-normal leading-relaxed max-w-2xl mx-auto md:text-center">
-            Explore every feature designed to simplify your financial life—from
-            tracking daily expenses to AI-powered automation.
+            ExpenseAll helps you keep a record of these purchases so you can understand where your money goes.
           </p>
         </div>
 
@@ -168,7 +167,7 @@ const PowerfulFeature = () => {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-4 lg:gap-4 items-center min-h-fit md:min-h-[520px] lg:min-h-[650px] relative">
           {/* ==================== LEFT SIDE FEATURES ==================== */}
           <div className="md:col-span-4 pr-0 md:pr-6 lg:pr-10 relative order-2 md:order-1 flex flex-col gap-8 md:gap-0 md:text-right md:items-end min-h-0 md:min-h-[500px] lg:min-h-[600px]">
-            <div className="md:absolute xl:mt-7 lg:mt-25 md:mt-26 md:top-0 md:right-0 flex flex-col items-start md:items-end z-30 w-full">
+            <div className="md:absolute xl:mt-4 lg:mt-25 md:mt-26 md:top-0 md:right-0 flex flex-col items-start md:items-end z-30 w-full">
               <h3 className="text-[#22D3EE] font-manrope text-lg md:text-sm lg:text-base xl:text-xl font-semibold mb-1 md:max-w-[280px] lg:max-w-[340px] text-left md:text-right">
                 {LEFT_FEATURE_1_HEADING}
               </h3>
@@ -186,7 +185,7 @@ const PowerfulFeature = () => {
               </p>
             </div>
 
-            <div className="md:absolute xl:mb-31 lg:mb-38 md:mb-24 md:bottom-0 md:right-0 flex flex-col items-start md:items-end z-30 w-full">
+            <div className="md:absolute xl:mb-27 lg:mb-38 md:mb-24 md:bottom-0 md:right-0 flex flex-col items-start md:items-end z-30 w-full">
               <h3 className="text-[#22D3EE] font-manrope text-lg md:text-sm lg:text-base xl:text-xl font-semibold mb-1 md:max-w-[280px] lg:max-w-[340px] text-left md:text-right">
                 {LEFT_FEATURE_3_HEADING}
               </h3>

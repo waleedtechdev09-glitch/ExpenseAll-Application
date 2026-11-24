@@ -8,6 +8,10 @@ import TrustedPeople from "@/components/TrustedPeople";
 import Pricing from "@/components/Pricing";
 import Finances from "@/components/Finances";
 import ExpenseInAction from "@/components/ExpenseInAction";
+import DailyIncome from "@/components/DailyIncome";
+import ExpenseReport from "@/components/ExpenseReport";
+import BudgetPlanning from "@/components/BudgetPlanning";
+import OfflineExpenses from "@/components/OfflineExpenses";
 
 const Home = () => {
   return (
@@ -23,6 +27,7 @@ const Home = () => {
       >
         <Hero />
         <PowerfulFeature />
+        <DailyIncome />
       </div>
       <Rating />
       <ExpenseInAction/>
@@ -38,6 +43,9 @@ const Home = () => {
         <AiPoweredFeature />
       </div>
 
+      <BudgetPlanning />
+      <OfflineExpenses />
+      <ExpenseReport/>
       <Pricing />
       <TrustedPeople />
       <FAQs />

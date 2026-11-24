@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const data = {
-  playStoreUrl: "#",
+  playStoreUrl: "https://play.google.com/store/apps/details?id=com.elexoft.expenseall.app",
   playStoreBadge: "/assets/playStore.png",
   appStoreUrl: "#",
   appStoreBadge: "/assets/apple.png",
@@ -26,21 +26,20 @@ const Finances = () => {
         {/* Content */}
         <div className="relative z-10 max-w-2xl mx-auto">
           <h2 className="font-manrope text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-medium text-white leading-tight text-center">
-            Ready to Take Control of Your{" "}
-            <span className="text-cyan-400">Finances</span>?
+            Start Tracking with{" "}
+            <span className="text-cyan-400 font-bold">ExpenseAll</span>?
           </h2>
 
           <p className="font-lato mt-3 sm:mt-4 text-gray-300 text-sm sm:text-base md:text-lg leading-relaxed text-center">
-            Track expenses, manage budgets, and unlock AI-powered money
-            management—all from one beautifully designed app.
+            Use ExpenseAll to record expenses, manage budgets and review your money in one place. Choose manual entry, receipt scanning or voice input to add purchases in the way that suits you.
           </p>
 
           {/* Store Badges */}
           <div className="mt-6 sm:mt-8 flex flex-nowrap items-center justify-center gap-2 sm:gap-3">
             {/* Google Play */}
-            <div
-              // href={data.playStoreUrl}
-              // target="_blank"
+            <a
+              href={data.playStoreUrl}
+              target="_blank"
               rel="noopener noreferrer"
               className="flex items-center cursor-pointer gap-1.5 sm:gap-2 w-[125px] sm:w-[155px] md:w-[170px] h-[42px] sm:h-[48px] md:h-[54px] px-2.5 sm:px-3 bg-black border border-white rounded-lg hover:bg-neutral-900 transition-all duration-200 hover:scale-[1.03] shrink-0"
             >
@@ -60,7 +59,7 @@ const Finances = () => {
                   Google Play
                 </p>
               </div>
-            </div>
+            </a>
 
             {/* App Store */}
             <div

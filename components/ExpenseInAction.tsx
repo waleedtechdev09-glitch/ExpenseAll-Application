@@ -49,10 +49,10 @@ const ExpenseInAction = () => {
   };
 
   return (
-    <section className="w-full bg-transparent px-5 py-10 sm:py-12">
+    <section id="expense-in-action" className="w-full bg-transparent px-5 py-10 sm:py-12">
       <div className="mx-auto max-w-[850px] text-center">
         <h2 className="text-[24px] font-semibold leading-tight text-white sm:text-[26px]">
-          See <span className="text-cyan-400">ExpenseAll</span> in Action
+          See <span className="text-cyan-400 font-bold">ExpenseAll</span> in Action
         </h2>
         <p className="mx-auto mt-2 max-w-[540px] text-[14px] leading-[20px] text-white/85 sm:text-[15px]">
           Experience a smarter, simpler way to manage your money, available on
