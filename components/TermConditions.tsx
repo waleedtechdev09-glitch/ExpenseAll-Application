@@ -1,12 +1,95 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 
-const sections = [
+type Subsection = {
+  title: string;
+  paragraphs: string[];
+  list?: string[];
+};
+
+type Section = {
+  id: string;
+  title: string;
+  content?: React.ReactNode;
+  list?: string[];
+  paragraphs?: string[];
+  subsections?: Subsection[];
+};
+
+const sections: Section[] = [
   {
     id: "acceptance",
     title: "Acceptance of Terms",
     content:
       "By accessing or using the ExpenseAll application, you acknowledge that you have read, understood, and agreed to these Terms & Conditions. If you do not agree with any part of these terms, please discontinue using the service.",
+  },
+  {
+    id: "eula",
+    title: "End User License Agreement (EULA)",
+    paragraphs: [
+      "ExpenseAll is licensed to you, not sold. By downloading or using the app, you agree to this agreement. If Elexoft provides a separate custom agreement, that one applies instead. Elexoft (“Licensor”) keeps all rights not expressly granted to you.",
+    ],
+    subsections: [
+      {
+        title: "Scope of License",
+        paragraphs: [
+          "Elexoft grants you a limited, non-transferable license to use ExpenseAll on Apple devices you own or control, as permitted by the App Store usage rules. This covers any updates, content, or services within the app unless they come with a separate agreement. You may not:",
+        ],
+        list: [
+          "Make the app available over a network for simultaneous use by multiple devices.",
+          "Transfer, redistribute, or sublicense the app. If you sell your device, you must remove the app first.",
+          "Copy, modify, reverse-engineer, or extract the source code of the app, or create derivative works, except where the law or open-source terms allow it.",
+        ],
+      },
+      {
+        title: "Consent to Use of Data",
+        paragraphs: [
+          "Elexoft may collect technical information about your device and software to provide updates, support, and services. This data is used in a form that does not personally identify you, and may help improve our products.",
+        ],
+      },
+      {
+        title: "Termination",
+        paragraphs: [
+          "This agreement lasts until you or Elexoft ends it. It ends automatically if you breach any of its terms.",
+        ],
+      },
+      {
+        title: "External Services",
+        paragraphs: [
+          "The app may link to services or websites from Elexoft or third parties. You use them at your own risk, and Elexoft is not responsible for their content or accuracy. Information shown in the app, including financial, medical, or location data, is for general purposes only and not guaranteed. You must not use these services to harass, abuse, threaten, or defame anyone, or to break the law. Services may be changed, suspended, or restricted at any time without notice, and you are responsible for following your local laws.",
+        ],
+      },
+      {
+        title: "Disclaimer of Warranty",
+        paragraphs: [
+          "To the fullest extent allowed by law, the app and its services are provided “as is” and “as available,” without warranties of any kind, express, implied, or statutory. You bear the cost of any servicing or repair if the app proves defective. Some regions do not allow these exclusions, so they may not apply to you.",
+        ],
+      },
+      {
+        title: "Limitation of Liability",
+        paragraphs: [
+          "To the extent allowed by law, Elexoft is not liable for personal injury or for incidental, special, indirect, or consequential damages, including loss of profits or data, arising from your use of or inability to use the app. Our total liability to you will not exceed fifty dollars ($50.00). Some regions do not allow these limits, so they may not apply to you.",
+        ],
+      },
+      {
+        title: "Export Compliance",
+        paragraphs: [
+          "You may not export or re-export the app except as permitted by U.S. law and the laws of the country where you obtained it. You confirm you are not in a U.S.-embargoed country or on any U.S. restricted-party list, and will not use the app for purposes prohibited by U.S. law, including weapons development.",
+        ],
+      },
+      {
+        title: "U.S. Government Users",
+        paragraphs: [
+          "The app and its documentation are “Commercial Items” under U.S. federal regulations, and U.S. Government users receive only the rights granted to all other users.",
+        ],
+      },
+      {
+        title: "Governing Law",
+        paragraphs: [
+          "This agreement is governed by the laws of the State of California, and disputes will be handled by the courts in Santa Clara County, California. Residents of the European Union, Switzerland, Norway, or Iceland are governed by the laws and courts of their place of residence. The UN Convention on the International Sale of Goods does not apply.",
+        ],
+      },
+    ],
   },
   {
     id: "accounts",
@@ -200,6 +283,40 @@ export default function TermConditions() {
                     ))}
                   </ul>
                 )}
+
+                {section.paragraphs?.map((text, i) => (
+                  <p
+                    key={i}
+                    className="text-gray-300 text-sm sm:text-lg leading-7 sm:leading-8 mb-3"
+                  >
+                    {text}
+                  </p>
+                ))}
+
+                {section.subsections?.map((sub) => (
+                  <div key={sub.title} className="mt-6 sm:mt-8">
+                    <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">
+                      {sub.title}
+                    </h3>
+
+                    {sub.paragraphs.map((text, i) => (
+                      <p
+                        key={i}
+                        className="text-gray-300 text-sm sm:text-lg leading-7 sm:leading-8 mb-3"
+                      >
+                        {text}
+                      </p>
+                    ))}
+
+                    {sub.list && (
+                      <ul className="list-disc ml-4 sm:ml-6 mt-3 sm:mt-4 space-y-1.5 sm:space-y-2 text-gray-300 text-sm sm:text-base">
+                        {sub.list.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
               </section>
             ))}
           </div>
